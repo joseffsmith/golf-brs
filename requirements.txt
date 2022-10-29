@@ -19,7 +19,6 @@ dbus-python==1.2.16
 decorator==5.1.1
 distlib==0.3.6
 distro==1.4.0
-distro-info===0.23ubuntu1
 dnspython==2.2.1
 entrypoints==0.3
 executing==1.2.0
@@ -73,7 +72,6 @@ pyrsistent==0.15.5
 pyserial==3.4
 python-apt==2.0.0
 python-dateutil==2.8.2
-python-debian===0.1.36ubuntu1
 python-dotenv==0.21.0
 pytz==2022.5
 pytz-deprecation-shim==0.1.0.post0
