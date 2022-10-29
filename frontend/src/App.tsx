@@ -150,7 +150,7 @@ function App() {
             {bookings.jobs.map((b) => {
               return (
                 <ListItem>
-                  {b[0]}, {b[1]}
+                  {b.id}, {b.next_run_time}
                 </ListItem>
               );
             })}
