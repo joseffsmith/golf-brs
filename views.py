@@ -46,8 +46,8 @@ def curr_bookings():
 def schedule_booking():
     json = request.json
     date = json['date']
-    hour = json['hour']
-    minute = json['minute']
+    hour = str(json['hour']).zfill(2)
+    minute = str(json['minute']).zfill(2)
     parsed_date = datetime.strptime(date, '%Y/%m/%d')
     booking_date = parsed_date.replace(hour=22) - timedelta(days=7)
 
