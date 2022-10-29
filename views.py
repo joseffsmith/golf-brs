@@ -6,7 +6,6 @@ from flask_cors import CORS
 from dotenv import load_dotenv
 import logging
 import app
-import pymongo
 flaskapp = Flask(__name__)
 CORS(flaskapp)
 
@@ -31,20 +30,20 @@ MONGO_PASS = os.getenv('MONGO_PASS')
 
 
 @flaskapp.route('/curr_bookings/', methods=['GET'])
-async def curr_bookings():
+def curr_bookings():
 
     background_sched_add_jobs.start()
     jobs = background_sched_add_jobs.get_jobs()
+    js = [
+        {'id': j.id, 'time': j.next_run_time} for j in jobs]
     background_sched_add_jobs.shutdown()
-
-    resp = jsonify(status='ok', jobs=[
-                   (j.id, j.next_run_time) for j in jobs])
+    resp = jsonify(status='ok', jobs=js)
     resp.headers.add('Access-Control-Allow-Origin', '*')
     return resp
 
 
 @flaskapp.route('/scheduler/booking/', methods=['POST'])
-async def schedule_booking():
+def schedule_booking():
     json = request.json
     date = json['date']
     hour = json['hour']
