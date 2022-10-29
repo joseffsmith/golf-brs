@@ -2,6 +2,7 @@ import requests
 import bs4
 from dotenv import load_dotenv
 import os
+import pause
 load_dotenv()
 
 USERNAME = os.getenv('BRS_USERNAME')
@@ -9,7 +10,7 @@ PASSWORD = os.getenv('BRS_PASSWORD')
 BASE_URL = os.getenv('BASE_URL')
 
 
-def book_job(date, hour, minute):
+def book_job(date, hour, minute, wait):
     time = f"{str(hour).zfill(2)}:{minute}"
     session = requests.Session()
     user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:86.0) Gecko/20100101 Firefox/86.0'
@@ -30,6 +31,8 @@ def book_job(date, hour, minute):
     })
     print('Logging in: ', resp)
 
+    pause.until(wait)
+    # wait until it's the time specified
     print(f'Getting tee times for {date}...')
     resp = session.get(
         f'https://members.brsgolf.com/thevalehotelspa/tee-sheet/data/1/{date}')

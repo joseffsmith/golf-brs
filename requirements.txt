@@ -14,6 +14,7 @@ itsdangerous==2.1.2
 Jinja2==3.1.2
 jmespath==0.10.0
 MarkupSafe==2.1.1
+pause==0.3
 pymongo==3.11.3
 python-dateutil==2.8.2
 python-dotenv==0.15.0
