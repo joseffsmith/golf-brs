@@ -51,7 +51,7 @@ def schedule_booking():
     parsed_date = datetime.strptime(date, '%Y/%m/%d')
     booking_date = parsed_date.replace(hour=22) - timedelta(days=7)
 
-    secs_before = parsed_date - timedelta(seconds=10)
+    secs_before = booking_date - timedelta(seconds=10)
     background_sched_add_jobs.start()
     background_sched_add_jobs.add_job(
         app.book_job,
