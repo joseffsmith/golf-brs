@@ -1,6 +1,4 @@
-# fly.toml file generated for frosty-frost-6465 on 2022-10-29T22:25:50+01:00
-
-app = "frosty-frost-6465"
+app = "brs"
 kill_signal = "SIGINT"
 kill_timeout = 5
 

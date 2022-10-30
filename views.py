@@ -74,31 +74,27 @@ def schedule_booking():
     hour = str(json['hour']).zfill(2)
     minute = str(json['minute']).zfill(2)
     parsed_date = datetime.strptime(date, '%Y/%m/%d')
-    booking_date = parsed_date.replace(hour=22) - timedelta(days=7)
 
-    secs_before = booking_date - timedelta(seconds=10)
-    background_sched_add_jobs.start()
+    # snap to 10pm
+    wait_until = parsed_date.replace(hour=22) - timedelta(days=7)
+    next_run_time = wait_until - timedelta(seconds=10)
 
     logger.debug('Booking job')
-    if booking_date < datetime.now():
+
+    if wait_until < datetime.now():
         logger.debug('Comp likely open, scheduling for now')
-        background_sched_add_jobs.add_job(
-            app.book_job,
-            id=f'{date}-{hour}:{minute}',
-            args=[date, hour, minute, datetime.now()],
-            replace_existing=True,
-            misfire_grace_time=None,
-        )
-    else:
-        logger.debug(f'Scheduling for {booking_date}')
-        background_sched_add_jobs.add_job(
-            app.book_job,
-            id=f'{date}-{hour}:{minute}',
-            args=[date, hour, minute, booking_date],
-            replace_existing=True,
-            next_run_time=secs_before,
-            misfire_grace_time=None,
-        )
+        next_run_time = datetime.now() + timedelta(seconds=30)
+        wait_until = None
+
+    background_sched_add_jobs.start()
+    background_sched_add_jobs.add_job(
+        app.book_job,
+        id=f'{date}-{hour}:{minute}',
+        args=[date, hour, minute, wait_until],
+        replace_existing=True,
+        next_run_time=next_run_time,
+        misfire_grace_time=None,
+    )
 
     background_sched_add_jobs.shutdown()
 

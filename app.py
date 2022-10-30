@@ -40,12 +40,13 @@ def login(password, session=None):
     return session
 
 
-def book_job(date, hour, minute, wait):
+def book_job(date, hour, minute, wait=None):
     time = f"{str(hour).zfill(2)}:{minute}"
 
     session = login(PASSWORD)
-
-    pause.until(wait)
+    if wait:
+        logger.debug('Waiting...')
+        pause.until(wait)
     # wait until it's the time specified
     print(f'Getting tee times for {date}...')
     resp = session.get(
