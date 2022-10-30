@@ -36,7 +36,8 @@ def login():
         abort(401, 'No password')
     try:
         app.login(password)
-    except:
+    except Exception as e:
+        print(e)
         abort(400, 'Failed to login')
 
     return jsonify(status='ok')
@@ -51,6 +52,15 @@ def curr_bookings():
         {'id': j.id, 'time': j.next_run_time} for j in jobs]
     background_sched_add_jobs.shutdown()
     resp = jsonify(status='ok', jobs=js)
+    resp.headers.add('Access-Control-Allow-Origin', '*')
+    return resp
+
+
+@flaskapp.route('/clear_bookings', method=['GET'])
+def clear_bookings():
+    background_sched_add_jobs.start()
+    background_sched_add_jobs.remove_all_jobs()
+    resp = jsonify(status='ok')
     resp.headers.add('Access-Control-Allow-Origin', '*')
     return resp
 

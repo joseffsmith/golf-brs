@@ -31,15 +31,32 @@ const api_key = import.meta.env.VITE_API_KEY;
 axios.defaults.baseURL = api_url;
 axios.defaults.headers["X-BRS-API-KEY"] = api_key;
 
-const Alert = forwardRef<HTMLDivElement, AlertProps>(function Alert(
-  props,
-  ref
-) {
-  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
-});
-
-function App() {
+const App = () => {
   const [error, setError] = useState<AxiosError | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [password, setPassword] = useState("");
+  const [showModal, setShowModal] = useState(true);
+
+  const handleLogin = () => {
+    if (!password) {
+      return;
+    }
+    setIsLoggingIn(true);
+    axios
+      .get("/login", { params: { password } })
+      .then(() => {
+        setIsLoggedIn(true);
+        setShowModal(false);
+      })
+      .catch((err) => {
+        setError(new AxiosError("Login failed"));
+      })
+      .finally(() => {
+        setIsLoggingIn(false);
+      });
+  };
+
   axios.interceptors.response.use(
     (resp) => {
       return resp;
@@ -49,9 +66,96 @@ function App() {
       return Promise.reject(err);
     }
   );
-  const [password, setPassword] = useState("arsenal1");
-  const [showModal, setShowModal] = useState(false);
+  return (
+    <LocalizationProvider dateAdapter={AdapterDateFns}>
+      <CssBaseline />
+      <Box
+        sx={{
+          backgroundColor: (theme) => theme.palette.grey[100],
+          overflowY: "auto",
+        }}
+        position="absolute"
+        left={0}
+        top={0}
+        right={0}
+        bottom={0}
+        pt={10}
+        display="flex"
+        flexDirection={"column"}
+        justifyContent="flex-start"
+        alignItems={"center"}
+      >
+        <AppBar position="fixed">
+          <Toolbar>
+            <Typography
+              variant="h6"
+              component="div"
+              sx={{ flexGrow: 1, textAlign: "left" }}
+            >
+              Golf app
+            </Typography>
+            <Button
+              variant="outlined"
+              sx={{ color: "white" }}
+              onClick={() => setShowModal(true)}
+            >
+              Change password
+            </Button>
+          </Toolbar>
+        </AppBar>
+        {isLoggedIn && <AuthedApp />}
+      </Box>
 
+      {error && (
+        <Snackbar
+          open={!!error}
+          autoHideDuration={6000}
+          onClose={() => setError(null)}
+        >
+          <Alert onClose={() => setError(null)} severity="error">
+            There was an issue, error: "{error.message}".
+          </Alert>
+        </Snackbar>
+      )}
+      <Dialog open={showModal}>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleLogin();
+          }}
+        >
+          <Box height={4}>{isLoggingIn && <LinearProgress />}</Box>
+          <DialogTitle>Enter your BRS password</DialogTitle>
+          <DialogContent>
+            <TextField
+              fullWidth
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button
+              variant="contained"
+              onClick={handleLogin}
+              disabled={password === "" || isLoggingIn}
+            >
+              Save
+            </Button>
+          </DialogActions>
+        </form>
+      </Dialog>
+    </LocalizationProvider>
+  );
+};
+
+const Alert = forwardRef<HTMLDivElement, AlertProps>(function Alert(
+  props,
+  ref
+) {
+  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});
+
+function AuthedApp() {
   var nextWeek = new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000);
   const [date, setDate] = useState(nextWeek);
   const [hour, setHour] = useState(8);
@@ -87,176 +191,110 @@ function App() {
       .finally(() => setIsBooking(false));
   };
 
-  const handleClose = () => {
-    if (!password) {
-      return;
-    }
-    setShowModal(false);
-  };
-
   return (
-    <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <CssBaseline />
-      {error && (
-        <Snackbar
-          open={!!error}
-          autoHideDuration={6000}
-          onClose={() => setError(null)}
-        >
-          <Alert onClose={() => setError(null)} severity="error">
-            There was an issue, error: "{error.message}".
-          </Alert>
-        </Snackbar>
-      )}
-
-      <Box
-        sx={{
-          backgroundColor: (theme) => theme.palette.grey[100],
-          overflowY: "auto",
-        }}
-        position="absolute"
-        left={0}
-        top={0}
-        right={0}
-        bottom={0}
-        pt={10}
-        display="flex"
-        flexDirection={"column"}
-        justifyContent="flex-start"
-        alignItems={"center"}
-      >
-        <AppBar position="fixed">
-          <Toolbar>
-            <Typography
-              variant="h6"
-              component="div"
-              sx={{ flexGrow: 1, textAlign: "left" }}
-            >
-              Golf app
-            </Typography>
-            <Button
-              variant="outlined"
-              sx={{ color: "white" }}
-              onClick={() => setShowModal(true)}
-            >
-              Change password
-            </Button>
-          </Toolbar>
-        </AppBar>
-        <Box>
-          <Box height={"4px"}>{isBooking && <LinearProgress />}</Box>
-          <Box component={Paper} mb={2} mx={2} p={2} width={300}>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleAddBooking();
-              }}
-            >
-              <Typography variant="h5">Add booking</Typography>
-              <Box p={2}>
-                <DatePicker
-                  value={date}
-                  onChange={(e) => setDate(e)}
-                  inputFormat={"dd/MM/yyyy"}
-                  renderInput={(params) => <TextField {...params} />}
-                  label="date"
-                />
-              </Box>
-              <Box p={2} display="flex" alignItems="center">
-                <TextField
-                  fullWidth
-                  select
-                  onChange={(e) => setHour(e.target.value)}
-                  value={hour}
-                  label="hour"
-                >
-                  <MenuItem value={6}>6</MenuItem>
-                  <MenuItem value={7}>7</MenuItem>
-                  <MenuItem value={8}>8</MenuItem>
-                  <MenuItem value={9}>9</MenuItem>
-                  <MenuItem value={10}>10</MenuItem>
-                  <MenuItem value={11}>11</MenuItem>
-                  <MenuItem value={12}>12</MenuItem>
-                  <MenuItem value={13}>13</MenuItem>
-                  <MenuItem value={14}>14</MenuItem>
-                  <MenuItem value={15}>15</MenuItem>
-                  <MenuItem value={16}>16</MenuItem>
-                  <MenuItem value={17}>17</MenuItem>
-                  <MenuItem value={18}>18</MenuItem>
-                </TextField>
-                <Typography variant={"h5"}>:</Typography>
-                <TextField
-                  fullWidth
-                  select
-                  onChange={(e) => setMinute(e.target.value)}
-                  value={minute}
-                  label="minute"
-                >
-                  <MenuItem value={0}>0</MenuItem>
-                  <MenuItem value={10}>10</MenuItem>
-                  <MenuItem value={20}>20</MenuItem>
-                  <MenuItem value={30}>30</MenuItem>
-                  <MenuItem value={40}>40</MenuItem>
-                  <MenuItem value={50}>50</MenuItem>
-                </TextField>
-              </Box>
-              <Box p={2} display="flex" justifyContent={"flex-end"}>
-                <Button
-                  variant="contained"
-                  disabled={isBooking}
-                  onClick={handleAddBooking}
-                >
-                  Book
-                </Button>
-              </Box>
-            </form>
-          </Box>
-        </Box>
-
-        <Box mx={2}>
-          <Box height={"4px"}>{isLoadingBookings && <LinearProgress />}</Box>
-          <Box component={Paper} p={2} minWidth={300}>
-            <List>
-              <Typography variant={"h5"}>Scheduled</Typography>
-              {bookings.jobs.map((b) => {
-                return (
-                  <ListItem key={b.id}>
-                    Tee time: {b.id}, Booking time: {b.time}
-                  </ListItem>
-                );
-              })}
-            </List>
-          </Box>
-        </Box>
-
-        <Dialog open={showModal} onClose={handleClose}>
+    <>
+      <Box width={400} maxWidth="90%" mx={4} mb={2}>
+        <Box height={"4px"}>{isBooking && <LinearProgress />}</Box>
+        <Box component={Paper} p={2}>
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              setShowModal(false);
+              handleAddBooking();
             }}
           >
-            <DialogTitle>Enter your BRS password</DialogTitle>
-            <DialogContent>
+            <Typography variant="h5">Add booking</Typography>
+            <Box p={2}>
+              <DatePicker
+                value={date}
+                onChange={(e) => setDate(e)}
+                inputFormat={"dd/MM/yyyy"}
+                renderInput={(params) => <TextField fullWidth {...params} />}
+                label="date"
+              />
+            </Box>
+            <Box p={2} display="flex" alignItems="center">
               <TextField
                 fullWidth
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </DialogContent>
-            <DialogActions>
+                select
+                onChange={(e) => setHour(e.target.value)}
+                value={hour}
+                label="hour"
+              >
+                <MenuItem value={6}>6</MenuItem>
+                <MenuItem value={7}>7</MenuItem>
+                <MenuItem value={8}>8</MenuItem>
+                <MenuItem value={9}>9</MenuItem>
+                <MenuItem value={10}>10</MenuItem>
+                <MenuItem value={11}>11</MenuItem>
+                <MenuItem value={12}>12</MenuItem>
+                <MenuItem value={13}>13</MenuItem>
+                <MenuItem value={14}>14</MenuItem>
+                <MenuItem value={15}>15</MenuItem>
+                <MenuItem value={16}>16</MenuItem>
+                <MenuItem value={17}>17</MenuItem>
+                <MenuItem value={18}>18</MenuItem>
+              </TextField>
+              <Typography variant={"h5"}>:</Typography>
+              <TextField
+                fullWidth
+                select
+                onChange={(e) => setMinute(e.target.value)}
+                value={minute}
+                label="minute"
+              >
+                <MenuItem value={0}>0</MenuItem>
+                <MenuItem value={10}>10</MenuItem>
+                <MenuItem value={20}>20</MenuItem>
+                <MenuItem value={30}>30</MenuItem>
+                <MenuItem value={40}>40</MenuItem>
+                <MenuItem value={50}>50</MenuItem>
+              </TextField>
+            </Box>
+            <Box p={2} display="flex" justifyContent={"flex-end"}>
               <Button
                 variant="contained"
-                onClick={handleClose}
-                disabled={password === ""}
+                disabled={isBooking}
+                onClick={handleAddBooking}
               >
-                Save
+                Book
               </Button>
-            </DialogActions>
+            </Box>
           </form>
-        </Dialog>
+        </Box>
       </Box>
-    </LocalizationProvider>
+
+      <Box width={400} maxWidth="90%" mx={4} mb={2}>
+        <Box height={"4px"}>{isLoadingBookings && <LinearProgress />}</Box>
+        <Box component={Paper} p={2}>
+          <List>
+            <Typography variant={"h5"}>Scheduled</Typography>
+            {bookings.jobs.map((b) => {
+              return (
+                <ListItem
+                  key={b.id}
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "flex-start",
+                  }}
+                >
+                  <>
+                    <Box>
+                      Tee time:{" "}
+                      <code style={{ display: "inline" }}>{b.id}</code>
+                    </Box>
+                    <Box>
+                      Booking time:{" "}
+                      <code style={{ display: "inline" }}>{b.time}</code>
+                    </Box>
+                  </>
+                </ListItem>
+              );
+            })}
+          </List>
+        </Box>
+      </Box>
+    </>
   );
 }
 

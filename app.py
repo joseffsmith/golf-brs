@@ -33,7 +33,7 @@ def login(password, session=None):
         'login_form[login]': '',
         'login_form[_token]': token
     })
-    if resp.headers.location == '/thevalehotelspa/login':
+    if resp.status_code == 302 and resp.headers.get('location') == '/thevalehotelspa/login':
         print('Failed to log in')
         raise Exception('Failed to login')
     print('Logged in: ', resp)
