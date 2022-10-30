@@ -78,14 +78,27 @@ def schedule_booking():
 
     secs_before = booking_date - timedelta(seconds=10)
     background_sched_add_jobs.start()
-    background_sched_add_jobs.add_job(
-        app.book_job,
-        id=f'{date}-{hour}:{minute}',
-        args=[date, hour, minute, booking_date],
-        replace_existing=True,
-        next_run_time=secs_before,
-        misfire_grace_time=None,
-    )
+
+    logger.debug('Booking job')
+    if booking_date < datetime.now():
+        logger.debug('Comp likely open, scheduling for now')
+        background_sched_add_jobs.add_job(
+            app.book_job,
+            id=f'{date}-{hour}:{minute}',
+            args=[date, hour, minute, booking_date],
+            replace_existing=True,
+            misfire_grace_time=None,
+        )
+    else:
+        logger.debug(f'Scheduling for {booking_date}')
+        background_sched_add_jobs.add_job(
+            app.book_job,
+            id=f'{date}-{hour}:{minute}',
+            args=[date, hour, minute, booking_date],
+            replace_existing=True,
+            next_run_time=secs_before,
+            misfire_grace_time=None,
+        )
 
     background_sched_add_jobs.shutdown()
 
