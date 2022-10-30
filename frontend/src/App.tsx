@@ -41,9 +41,12 @@ const App = () => {
   const [error, setError] = useState<AxiosError | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
-  const [password, setPassword] = useState("");
+  const [password, _setPassword] = useState(localStorage.getItem("password"));
   const [showModal, setShowModal] = useState(true);
 
+  const setPassword = (password: string) => {
+    localStorage.setItem("password", password);
+  };
   const handleLogin = () => {
     if (!password) {
       return;

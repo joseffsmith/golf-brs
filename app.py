@@ -2,8 +2,9 @@ import requests
 import bs4
 from dotenv import load_dotenv
 import os
-import pause
 import logging
+import time
+from datetime import datetime
 load_dotenv()
 
 logging.basicConfig()
@@ -41,12 +42,15 @@ def login(password, session=None):
 
 
 def book_job(date, hour, minute, wait=None):
-    time = f"{str(hour).zfill(2)}:{minute}"
+    book_time = f"{str(hour).zfill(2)}:{minute}"
 
     session = login(PASSWORD)
     if wait:
-        logger.debug('Waiting...')
-        pause.until(wait)
+        logger.debug('Checking for wait')
+        while datetime.now() > wait:
+            time.sleep(.1)
+            logger.debug('Waiting...')
+
     # wait until it's the time specified
     print(f'Getting tee times for {date}...')
     resp = session.get(
@@ -56,7 +60,7 @@ def book_job(date, hour, minute, wait=None):
 
     times = data['times']
 
-    booking = times[time]['tee_time']
+    booking = times[book_time]['tee_time']
     if not booking['bookable']:
         raise Exception('Cannot book, is booked')
 
@@ -77,7 +81,7 @@ def book_job(date, hour, minute, wait=None):
     _token = b.find(attrs={'id': 'member_booking_form__token'}).get('value')
 
     print('Booking...')
-    resp = session.post(f"https://members.brsgolf.com/thevalehotelspa/bookings/store/1/{date.replace('/', '')}/{time.replace(':', '')}", data={
+    resp = session.post(f"https://members.brsgolf.com/thevalehotelspa/bookings/store/1/{date.replace('/', '')}/{book_time.replace(':', '')}", data={
         "member_booking_form[token]": token,
         "member_booking_form[player_1]": 1102,
         "member_booking_form[player_2]": 1103,
