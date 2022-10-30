@@ -3,16 +3,21 @@ import bs4
 from dotenv import load_dotenv
 import os
 import pause
+import logging
 load_dotenv()
+
+logging.basicConfig()
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 USERNAME = os.getenv('BRS_USERNAME')
 PASSWORD = os.getenv('BRS_PASSWORD')
 BASE_URL = os.getenv('BASE_URL')
 
 
-def book_job(date, hour, minute, wait):
-    time = f"{str(hour).zfill(2)}:{minute}"
-    session = requests.Session()
+def login(password, session=None):
+    if not session:
+        session = requests.Session()
     user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:86.0) Gecko/20100101 Firefox/86.0'
     session.headers = {'User-Agent': user_agent}
     print('Getting login page...')
@@ -21,15 +26,24 @@ def book_job(date, hour, minute, wait):
     b = bs4.BeautifulSoup(resp.content, features='html.parser')
 
     token = b.find(attrs={'id': 'login_form__token'}).get('value')
-
     print('Logging in...')
     resp = session.post('https://members.brsgolf.com/thevalehotelspa/login', data={
         'login_form[username]': USERNAME,
-        'login_form[password]': PASSWORD,
+        'login_form[password]': password,
         'login_form[login]': '',
         'login_form[_token]': token
     })
-    print('Logging in: ', resp)
+    if resp.headers.location == '/thevalehotelspa/login':
+        print('Failed to log in')
+        raise Exception('Failed to login')
+    print('Logged in: ', resp)
+    return session
+
+
+def book_job(date, hour, minute, wait):
+    time = f"{str(hour).zfill(2)}:{minute}"
+
+    session = login(PASSWORD)
 
     pause.until(wait)
     # wait until it's the time specified

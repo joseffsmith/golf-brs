@@ -17,16 +17,29 @@ load_dotenv()
 
 MONGO_USER = os.getenv('MONGO_USER')
 MONGO_PASS = os.getenv('MONGO_PASS')
-# API_SECRET = os.getenv('API_SECRET')
+API_KEY = os.getenv('API_KEY')
 
 
-# @flaskapp.before_request
-# def before_request():
-#     if request.method == 'OPTIONS':
-#         return
-#     key = request.headers.get('X-MS-JS-API-KEY')
-#     if key != API_SECRET:
-#         abort(401)
+@flaskapp.before_request
+def before_request():
+    if request.method == 'OPTIONS':
+        return
+    key = request.headers.get('X-BRS-API-KEY')
+    if key != API_KEY:
+        abort(401)
+
+
+@flaskapp.route('/login', methods=['GET'])
+def login():
+    password = request.args.get('password')
+    if not password:
+        abort(401, 'No password')
+    try:
+        app.login(password)
+    except:
+        abort(400, 'Failed to login')
+
+    return jsonify(status='ok')
 
 
 @flaskapp.route('/curr_bookings/', methods=['GET'])
