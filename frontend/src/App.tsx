@@ -6,14 +6,19 @@ import {
   AppBar,
   Box,
   Button,
+  Card,
+  CardContent,
+  CardHeader,
   CssBaseline,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  IconButton,
   LinearProgress,
   List,
   ListItem,
+  Menu,
   MenuItem,
   Paper,
   Snackbar,
@@ -25,6 +30,7 @@ import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import axios, { AxiosError } from "axios";
 import { format } from "date-fns";
 import MuiAlert, { AlertProps } from "@mui/material/Alert";
+import { MoreVert } from "@mui/icons-material";
 
 const api_url = import.meta.env.VITE_API_URL;
 const api_key = import.meta.env.VITE_API_KEY;
@@ -44,7 +50,7 @@ const App = () => {
     }
     setIsLoggingIn(true);
     axios
-      .get("/login", { params: { password } })
+      .get("/login/", { params: { password } })
       .then(() => {
         setIsLoggedIn(true);
         setShowModal(false);
@@ -74,11 +80,6 @@ const App = () => {
           backgroundColor: (theme) => theme.palette.grey[100],
           overflowY: "auto",
         }}
-        position="absolute"
-        left={0}
-        top={0}
-        right={0}
-        bottom={0}
         pt={10}
         display="flex"
         flexDirection={"column"}
@@ -163,46 +164,60 @@ function AuthedApp() {
   const [isBooking, setIsBooking] = useState(false);
   const [isLoadingBookings, setIsLoadingBookings] = useState(false);
   const [bookings, setBookings] = useState({ jobs: [] });
-
-  const loadBookings = () => {
-    setIsLoadingBookings(true);
-    return axios.get("/curr_bookings/").then((resp) => {
-      setBookings(resp.data);
-      setIsLoadingBookings(false);
-    });
-  };
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   useEffect(() => {
     loadBookings();
   }, []);
 
-  const handleAddBooking = () => {
+  const open = Boolean(anchorEl);
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const loadBookings = async () => {
+    setIsLoadingBookings(true);
+    const resp = await axios.get("/curr_bookings/");
+    setBookings(resp.data);
+    setIsLoadingBookings(false);
+  };
+
+  const clearBookings = async () => {
+    setIsLoadingBookings(true);
+    await axios.get("/clear_bookings/");
+    setBookings({ jobs: [] });
+    setIsLoadingBookings(false);
+  };
+
+  const handleAddBooking = async () => {
     if (isBooking) {
       return;
     }
     setIsBooking(true);
-    axios
-      .post("/scheduler/booking/", {
-        date: format(date, "yyyy/MM/dd"),
-        hour,
-        minute,
-      })
-      .then(loadBookings)
-      .finally(() => setIsBooking(false));
+    await axios.post("/scheduler/booking/", {
+      date: format(date, "yyyy/MM/dd"),
+      hour,
+      minute,
+    });
+    await loadBookings();
+    setIsBooking(false);
   };
 
   return (
     <>
-      <Box width={400} maxWidth="90%" mx={4} mb={2}>
+      <Card sx={{ width: 400, maxWidth: "90%", mx: 4, mb: 2 }}>
         <Box height={"4px"}>{isBooking && <LinearProgress />}</Box>
-        <Box component={Paper} p={2}>
+        <CardHeader title="Add booking" />
+        <CardContent>
           <form
             onSubmit={(e) => {
               e.preventDefault();
               handleAddBooking();
             }}
           >
-            <Typography variant="h5">Add booking</Typography>
             <Box p={2}>
               <DatePicker
                 value={date}
@@ -260,14 +275,42 @@ function AuthedApp() {
               </Button>
             </Box>
           </form>
-        </Box>
-      </Box>
+        </CardContent>
+      </Card>
 
-      <Box width={400} maxWidth="90%" mx={4} mb={2}>
+      <Card sx={{ width: 400, maxWidth: "90%", mx: 4, mb: 2 }}>
         <Box height={"4px"}>{isLoadingBookings && <LinearProgress />}</Box>
-        <Box component={Paper} p={2}>
+        <CardHeader
+          title="Scheduled"
+          action={
+            <>
+              <IconButton onClick={handleClick} aria-label="settings">
+                <MoreVert />
+              </IconButton>
+              <Menu
+                id="basic-menu"
+                anchorEl={anchorEl}
+                open={open}
+                onClose={handleClose}
+                MenuListProps={{
+                  "aria-labelledby": "basic-button",
+                }}
+              >
+                <MenuItem
+                  color="error.main"
+                  onClick={async () => {
+                    await clearBookings();
+                    handleClose();
+                  }}
+                >
+                  Clear bookings
+                </MenuItem>
+              </Menu>
+            </>
+          }
+        />
+        <CardContent>
           <List>
-            <Typography variant={"h5"}>Scheduled</Typography>
             {bookings.jobs.map((b) => {
               return (
                 <ListItem
@@ -292,8 +335,8 @@ function AuthedApp() {
               );
             })}
           </List>
-        </Box>
-      </Box>
+        </CardContent>
+      </Card>
     </>
   );
 }

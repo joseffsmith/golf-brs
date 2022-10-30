@@ -29,7 +29,7 @@ def before_request():
         abort(401)
 
 
-@flaskapp.route('/login', methods=['GET'])
+@flaskapp.route('/login/', methods=['GET'])
 def login():
     password = request.args.get('password')
     if not password:
@@ -56,10 +56,12 @@ def curr_bookings():
     return resp
 
 
-@flaskapp.route('/clear_bookings', method=['GET'])
+@flaskapp.route('/clear_bookings/', methods=['GET'])
 def clear_bookings():
     background_sched_add_jobs.start()
     background_sched_add_jobs.remove_all_jobs()
+    background_sched_add_jobs.shutdown()
+
     resp = jsonify(status='ok')
     resp.headers.add('Access-Control-Allow-Origin', '*')
     return resp
