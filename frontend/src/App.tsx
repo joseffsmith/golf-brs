@@ -112,7 +112,7 @@ function App() {
       <Box
         sx={{
           backgroundColor: (theme) => theme.palette.grey[100],
-          overflowY: "scroll",
+          overflowY: "auto",
         }}
         position="absolute"
         left={0}
