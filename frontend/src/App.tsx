@@ -46,6 +46,7 @@ const App = () => {
 
   const setPassword = (password: string) => {
     localStorage.setItem("password", password);
+    _setPassword(password);
   };
   const handleLogin = () => {
     if (!password) {

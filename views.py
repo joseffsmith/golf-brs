@@ -89,6 +89,7 @@ def schedule_booking():
     background_sched_add_jobs.start()
     background_sched_add_jobs.add_job(
         app.book_job,
+        trigger='date',
         id=f'{date}-{hour}:{minute}',
         args=[date, hour, minute, wait_until],
         replace_existing=True,
