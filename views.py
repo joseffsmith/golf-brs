@@ -85,7 +85,7 @@ def schedule_booking():
         background_sched_add_jobs.add_job(
             app.book_job,
             id=f'{date}-{hour}:{minute}',
-            args=[date, hour, minute, booking_date],
+            args=[date, hour, minute, datetime.now()],
             replace_existing=True,
             misfire_grace_time=None,
         )

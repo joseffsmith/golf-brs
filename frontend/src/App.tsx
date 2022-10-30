@@ -80,6 +80,7 @@ const App = () => {
           backgroundColor: (theme) => theme.palette.grey[100],
           overflowY: "auto",
         }}
+        width="100%"
         pt={10}
         display="flex"
         flexDirection={"column"}
