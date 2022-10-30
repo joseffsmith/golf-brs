@@ -47,9 +47,10 @@ def book_job(date, hour, minute, wait=None):
     session = login(PASSWORD)
     if wait:
         logger.debug('Checking for wait')
-        while datetime.now() > wait:
+        while datetime.now() < wait:
             time.sleep(.1)
             logger.debug('Waiting...')
+            continue
 
     # wait until it's the time specified
     print(f'Getting tee times for {date}...')
