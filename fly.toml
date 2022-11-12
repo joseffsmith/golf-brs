@@ -1,3 +1,5 @@
+# fly.toml file generated for brs on 2022-11-12T20:40:42Z
+
 app = "brs"
 kill_signal = "SIGINT"
 kill_timeout = 5
@@ -17,7 +19,7 @@ kill_timeout = 5
 
 [processes]
   app = "gunicorn views:flaskapp"
-  clock = "python scheduler.py"
+  clock = "rq worker --with-scheduler --url 'redis://default:f8c7503cb2754ee7afcaa17090294502@fly-old-dew-3410.upstash.io'"
 
 [[services]]
   http_checks = []
