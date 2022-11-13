@@ -1,2 +1,2 @@
 web: gunicorn views:flaskapp
-clock: rq worker brs --with-scheduler --url ${REDIS_URL}
+clock: rqscheduler --queue-class=CustomQueue.CustomQueue --url=${RQ_REDIS_URL} --interval=8

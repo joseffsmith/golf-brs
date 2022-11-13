@@ -1,8 +1,8 @@
-import redis
-from rq import Queue
 from redis import Redis
-from dotenv import load_dotenv
+from rq_scheduler import Scheduler
+
 import os
+from dotenv import load_dotenv
 load_dotenv()
 REDIS_HOST = os.getenv('REDIS_HOST')
 REDIS_PASS = os.getenv('REDIS_PASS')
@@ -14,10 +14,6 @@ def create_connection():
         port='6379',
         password=REDIS_PASS
     )
+    scheduler = Scheduler('brs', connection=redis_conn)
 
-    q = Queue(name='brs', connection=redis_conn)
-    return q
-
-
-if __name__ == "__main__":
-    create_connection()
+    return scheduler

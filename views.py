@@ -1,4 +1,3 @@
-from scheduler import background_sched_add_jobs
 from datetime import datetime, timedelta
 import os
 from flask import Flask, request, jsonify, abort
