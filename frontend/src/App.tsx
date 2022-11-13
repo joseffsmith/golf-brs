@@ -302,6 +302,7 @@ function AuthedApp() {
                 }}
               >
                 <MenuItem
+                  disabled
                   color="error.main"
                   onClick={async () => {
                     await clearBookings();
@@ -319,7 +320,7 @@ function AuthedApp() {
             {bookings.jobs.map((b) => {
               return (
                 <ListItem
-                  key={b.id}
+                  key={b}
                   sx={{
                     display: "flex",
                     flexDirection: "column",
@@ -327,14 +328,15 @@ function AuthedApp() {
                   }}
                 >
                   <>
-                    <Box>
+                    {b}
+                    {/* <Box>
                       Tee time:{" "}
                       <code style={{ display: "inline" }}>{b.id}</code>
                     </Box>
                     <Box>
                       Booking time:{" "}
                       <code style={{ display: "inline" }}>{b.time}</code>
-                    </Box>
+                    </Box> */}
                   </>
                 </ListItem>
               );

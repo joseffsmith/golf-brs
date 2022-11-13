@@ -1,11 +1,20 @@
+import redis
 from rq import Queue
 from redis import Redis
-import time
+from dotenv import load_dotenv
+import os
+load_dotenv()
+REDIS_HOST = os.getenv('REDIS_HOST')
+REDIS_PASS = os.getenv('REDIS_PASS')
 
 
 def create_connection():
     redis_conn = Redis(
-        host='redis://default:f8c7503cb2754ee7afcaa17090294502@fly-old-dew-3410.upstash.io')
+        host=REDIS_HOST,
+        port='38586',
+        password=REDIS_PASS
+    )
+
     q = Queue(connection=redis_conn)
     return q
 

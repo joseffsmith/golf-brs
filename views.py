@@ -48,14 +48,9 @@ def login():
 def curr_bookings():
 
     queue = create_connection()
-    for job in queue.jobs:
-        logger.debug(job.to_dict())
-    # background_sched_add_jobs.start()
-    # jobs = background_sched_add_jobs.get_jobs()
-    # js = [
-    #     {'id': j.id, 'time': j.next_run_time} for j in jobs]
-    # background_sched_add_jobs.shutdown()
-    resp = jsonify(status='ok', jobs=[j.to_dict() for j in queue.jobs])
+
+    resp = jsonify(status='ok', jobs=[queue.fetch_job(
+        j).to_dict()['description'] for j in queue.scheduled_job_registry.get_job_ids()])
     resp.headers.add('Access-Control-Allow-Origin', '*')
     return resp
 
@@ -131,19 +126,6 @@ def schedule_booking():
 
     job = queue.enqueue_at(next_run_time, app.book_job,
                            date, hour, minute, wait_until)
-    logger.debug(job.to_dict())
-    # background_sched_add_jobs.start()
-    # background_sched_add_jobs.add_job(
-    #     app.book_job,
-    #     trigger='date',
-    #     id=f'{date}-{hour}:{minute}',
-    #     args=[date, hour, minute, wait_until],
-    #     replace_existing=True,
-    #     next_run_time=next_run_time,
-    #     misfire_grace_time=None,
-    # )
-
-    # background_sched_add_jobs.shutdown()
 
     response = jsonify({'status': 'ok'})
     response.headers.add('Access-Control-Allow-Origin', '*')
