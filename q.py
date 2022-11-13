@@ -11,11 +11,11 @@ REDIS_PASS = os.getenv('REDIS_PASS')
 def create_connection():
     redis_conn = Redis(
         host=REDIS_HOST,
-        port='38586',
+        port='6379',
         password=REDIS_PASS
     )
 
-    q = Queue(connection=redis_conn)
+    q = Queue(name='brs', connection=redis_conn)
     return q
 
 
